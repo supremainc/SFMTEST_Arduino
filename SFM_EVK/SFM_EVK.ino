@@ -72,7 +72,7 @@ void setup() {
 
   InitDisplay();
   InitTone();
-  
+
   leds.begin();  // Call this to start up the LED strip.
   leds.show();   // ...but the LEDs don't actually update until you call this.
 
@@ -108,6 +108,7 @@ void loop() {
 
   if (button_enroll)
   {
+    cleanSerialBuffer();
     clearDisplay();
     setLCDCursor(0);
     lcd.print("Enroll");
@@ -120,19 +121,20 @@ void loop() {
 
     for (int i = 0; i < 2; i++)
     {
+      //cleanSerialBuffer();
       leds.setPixelColor(0, ORANGE);
       leds.setBrightness(50);
       leds.show();
-      delay(200);
+      delay(20);
 
       while (1)
       {
-
+        delay(20);
         if (SFM_Serial.available() > 0)
           break;
       }
 
-      delay(200);
+      delay(100);
 
       byte rx_buffer[256];
       int count = 0;
@@ -142,8 +144,10 @@ void loop() {
         rx_buffer[count] = SFM_Serial.read();
 
         count++;
+        if (count == 13)
+          break;
       }
-      cleanSerialBuffer();
+      //cleanSerialBuffer();
       int response = rx_buffer[10];
 
       if (response == 0x62)
@@ -165,8 +169,10 @@ void loop() {
           Serial.print(" ");
           Serial.print(v);
           count++;
+          if (count == 13)
+            break;
         }
-        cleanSerialBuffer();
+        //cleanSerialBuffer();
 
         int response = rx_buffer[10];
         unsigned long userid_data[4];
@@ -191,6 +197,7 @@ void loop() {
           }
           else if (i == 1)
           {
+            success();
             setLCDCursor(0);
             lcd.print("Enroll Success");
             setLCDCursor(16);
@@ -202,15 +209,15 @@ void loop() {
           leds.setPixelColor(0, GREEN);
           leds.setBrightness(50);
           leds.show();
-
-          success();
+          
           delay(1000);
           clearDisplay();
 
         }
         else
         {
-//        delay(200);
+          //        delay(200);
+          fail();
           clearDisplay();
           setLCDCursor(0);
           lcd.print("Fail");
@@ -219,8 +226,6 @@ void loop() {
           leds.setBrightness(50);
           leds.show();
 
-          fail();
-
           delay(1000);
           clearDisplay();
         }
@@ -228,6 +233,7 @@ void loop() {
       }
       else
       {
+        fail();
         clearDisplay();
         setLCDCursor(0);
         lcd.print("Enroll Fail");
@@ -240,8 +246,6 @@ void loop() {
         leds.setBrightness(50);
         leds.show();
 
-        fail();
-
         delay(1000);
         clearDisplay();
         break;
@@ -252,8 +256,7 @@ void loop() {
 
   else if (button_identify)
   {
-    
-    
+    cleanSerialBuffer();
     clearDisplay();
     setLCDCursor(0);
     lcd.print("Identify");
@@ -273,13 +276,13 @@ void loop() {
       leds.setPixelColor(0, ORANGE);
       leds.setBrightness(50);
       leds.show();
-      delay(200);
+      delay(20);
 
       if (SFM_Serial.available() > 0)
         break;
     }
 
-    delay(200);
+    //delay(200);
 
     //int a = SFM_Serial.available();
     //  Serial.print(a);
@@ -295,9 +298,14 @@ void loop() {
       int v = rx_buffer[count];
       // Serial.print(" ");
       // Serial.print(v);
+      Serial.print("Data received");
+      Serial.print(count);
       count++;
+      if(count==13)
+        break;
     }
-    cleanSerialBuffer();
+    
+    //cleanSerialBuffer();
     int response = rx_buffer[10];
 
     //serial monitor message
@@ -327,8 +335,10 @@ void loop() {
         Serial.print(" ");
         Serial.print(v);
         count++;
+        if(count==13)
+          break;
       }
-      cleanSerialBuffer();
+      //cleanSerialBuffer();
 
       int response = rx_buffer[10];
       unsigned long userid_data[4];
@@ -350,6 +360,7 @@ void loop() {
       Serial.println(d , BIN);
       if (response == 0x61)
       {
+        success();
         clearDisplay();
         setLCDCursor(0);
         lcd.print("Identify Success");
@@ -361,14 +372,14 @@ void loop() {
         leds.setBrightness(50);
         leds.show();
 
-        success();
+
         delay(1000);
         clearDisplay();
-
       }
       else
       {
-//        delay(200);
+        fail();
+        //        delay(200);
         clearDisplay();
         setLCDCursor(0);
         lcd.print("Fail");
@@ -377,8 +388,6 @@ void loop() {
         leds.setBrightness(50);
         leds.show();
 
-        fail();
-
         delay(1000);
         clearDisplay();
       }
@@ -386,6 +395,7 @@ void loop() {
     }
     else
     {
+      fail();
       clearDisplay();
       setLCDCursor(0);
       lcd.print("Idendity Fail");
@@ -398,8 +408,6 @@ void loop() {
       leds.setBrightness(50);
       leds.show();
 
-      fail();
-
       delay(1000);
       clearDisplay();
     }
@@ -408,6 +416,7 @@ void loop() {
   }
   else if (button_delete)
   {
+    cleanSerialBuffer();
     clearDisplay();
     setLCDCursor(0);
     lcd.print("Delete All");
@@ -422,13 +431,13 @@ void loop() {
       leds.setPixelColor(0, ORANGE);
       leds.setBrightness(50);
       leds.show();
-      delay(200);
+      delay(20);
 
       if (SFM_Serial.available() > 0)
         break;
     }
 
-    delay(200);
+    //delay(200);
 
     byte rx_buffer[256];
     int count = 0;
@@ -442,14 +451,17 @@ void loop() {
       // Serial.print(" ");
       // Serial.print(v);
       count++;
+      if(count==13)
+        break;
     }
-    cleanSerialBuffer();
+    //cleanSerialBuffer();
 
     int response = rx_buffer[10];
 
 
     if (response == 0x61)
     {
+      success();
       delay(1000);
 
       clearDisplay();
@@ -460,10 +472,9 @@ void loop() {
       leds.setBrightness(50);
       leds.show();
 
-      success();
+
       delay(1000);
       clearDisplay();
-
     }
   }
 }
